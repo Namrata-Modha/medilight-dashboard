@@ -1,5 +1,5 @@
 // src/utils/privacy.js — PHI redaction + local extraction
-// Patient data NEVER leaves the browser. Only med names go to Claude AI.
+// Patient data NEVER leaves the browser. Only med names go to Gemini AI (via backend proxy).
 
 /**
  * Strip all Protected Health Information from text before sending to cloud.

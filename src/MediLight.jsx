@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
 import { s } from "./utils/constants";
 import { api, retryApi, isConnected } from "./utils/api";
 import { extractPHILocally } from "./utils/privacy";
-import { localParseOCR, localMatchItems, matchClaudeResultToProducts } from "./utils/parsers";
-import { interpretWithClaude, interpretImageWithClaude } from "./utils/claude";
+import { localParseOCR, localMatchItems, matchAIResultToProducts } from "./utils/parsers";
+import { interpretWithAI, interpretImageWithAI } from "./utils/ai";
 import { runOCROnImage } from "./utils/tesseract";
 
 import StatusBar from "./components/StatusBar";
@@ -162,7 +162,7 @@ export default function MediLight() {
     }
   };
 
-  // Image processing pipeline (Claude Vision → Tesseract → Claude Text → Local regex)
+  // Image processing pipeline (Gemini AI Vision → Tesseract → Gemini AI Text → Local regex)
   const processImage = async () => {
     if (!imagePreview) return;
     setBusy(true);
@@ -171,14 +171,14 @@ export default function MediLight() {
       const mediaType = mediaTypeMatch ? mediaTypeMatch[1] : "image/jpeg";
       const base64Data = imagePreview.split(",")[1];
 
-      // Step 1: Claude AI Vision
+      // Step 1: Gemini AI Vision
       setProcessingStage("ai_vision");
       setOcrProgress("AI analyzing image (PHI protected)...");
       try {
-        const claudeResult = await interpretImageWithClaude(base64Data, mediaType, products);
-        log("Claude AI Vision — Privacy-Safe Analysis", claudeResult);
+        const aiResult = await interpretImageWithAI(base64Data, mediaType, products);
+        log("Gemini AI Vision — Privacy-Safe Analysis", aiResult);
         setOcrProgress("AI analysis complete!");
-        setAiNotes(claudeResult.notes || "");
+        setAiNotes(aiResult.notes || "");
 
         let localPHI = { doctor_name: "See prescription", clinic: "See prescription", patient_name: "See prescription", date_issued: "See prescription" };
         try {
@@ -186,13 +186,13 @@ export default function MediLight() {
           localPHI = extractPHILocally(quickText);
         } catch { /* use defaults */ }
 
-        const matchedItems = matchClaudeResultToProducts(claudeResult, products);
+        const matchedItems = matchAIResultToProducts(aiResult, products);
         log("AI Medication Matching", { phi_kept_local: true, matched_items: matchedItems });
         setOcrResult(localPHI); setMatched(matchedItems); setProcessingStage(""); setOcrProgress(""); setBusy(false); setStep(1);
         return;
       } catch (visionErr) {
-        console.warn("Claude Vision failed, falling back:", visionErr);
-        log("Claude Vision Fallback", { error: visionErr.message });
+        console.warn("AI Vision failed, falling back:", visionErr);
+        log("AI Vision Fallback", { error: visionErr.message });
       }
 
       // Step 2: Tesseract OCR
@@ -205,19 +205,19 @@ export default function MediLight() {
 
       const localPHI = extractPHILocally(extractedText);
 
-      // Step 3: Claude AI text (PHI redacted)
+      // Step 3: Gemini AI text (PHI redacted)
       setProcessingStage("ai_text");
       setOcrProgress("AI interpreting (PHI redacted)...");
       try {
-        const claudeResult = await interpretWithClaude(extractedText, products);
-        log("Claude AI Text — PHI Redacted", { redacted_text_sent: true, result: claudeResult });
-        setAiNotes(claudeResult.notes || "");
-        const matchedItems = matchClaudeResultToProducts(claudeResult, products);
+        const aiResult = await interpretWithAI(extractedText, products);
+        log("Gemini AI Text — PHI Redacted", { redacted_text_sent: true, result: aiResult });
+        setAiNotes(aiResult.notes || "");
+        const matchedItems = matchAIResultToProducts(aiResult, products);
         setOcrResult(localPHI); setMatched(matchedItems); setOcrProgress(""); setProcessingStage(""); setBusy(false); setStep(1);
         return;
       } catch (aiErr) {
-        console.warn("Claude AI text failed:", aiErr);
-        log("Claude AI Fallback", { error: aiErr.message });
+        console.warn("Gemini AI text failed:", aiErr);
+        log("Gemini AI Fallback", { error: aiErr.message });
       }
 
       // Step 4: Local regex
@@ -242,13 +242,13 @@ export default function MediLight() {
       let items;
       setOcrProgress("AI analyzing (PHI redacted)...");
       try {
-        const claudeResult = await interpretWithClaude(ocrText, products);
-        log("Claude AI — PHI Redacted", claudeResult);
-        setAiNotes(claudeResult.notes || "");
-        items = matchClaudeResultToProducts(claudeResult, products);
+        const aiResult = await interpretWithAI(ocrText, products);
+        log("Gemini AI — PHI Redacted", aiResult);
+        setAiNotes(aiResult.notes || "");
+        items = matchAIResultToProducts(aiResult, products);
       } catch (aiErr) {
-        console.warn("Claude AI failed:", aiErr);
-        log("AI Fallback", { error: aiErr.message });
+        console.warn("Gemini AI failed:", aiErr);
+        log("Gemini AI Fallback", { error: aiErr.message });
         if (isConnected() && backendOk) {
           const res = await api("/api/ocr/extract", { method: "POST", body: JSON.stringify({ ocr_text: ocrText }) });
           items = res.order_summary;
@@ -372,7 +372,6 @@ export default function MediLight() {
       />
 
       <div style={{ maxWidth: "1060px", margin: "0 auto", padding: "20px 16px" }}>
-        {/* Loading spinner */}
         {loading && (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
             <div style={{ width: "36px", height: "36px", border: "3px solid #334155", borderTopColor: "#3b82f6", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
@@ -382,7 +381,6 @@ export default function MediLight() {
           </div>
         )}
 
-        {/* Error banner */}
         {!loading && loadError && (
           <div style={{ background: "#dc262612", border: "1px solid #dc262644", borderRadius: "10px", padding: "16px 20px", marginBottom: "16px" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
@@ -396,7 +394,6 @@ export default function MediLight() {
           </div>
         )}
 
-        {/* Empty inventory warning */}
         {!loading && !loadError && products.length === 0 && (
           <div style={{ background: "#eab30812", border: "1px solid #eab30833", borderRadius: "10px", padding: "16px 20px", marginBottom: "16px" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
@@ -410,7 +407,6 @@ export default function MediLight() {
           </div>
         )}
 
-        {/* Tab content */}
         {tab === "workflow" && !loading && (
           <WorkflowTab
             step={step} setStep={setStep}

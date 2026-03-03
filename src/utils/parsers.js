@@ -1,5 +1,5 @@
 // src/utils/parsers.js — Local regex parsing + inventory matching
-// Used as fallback when Claude AI is unavailable.
+// Used as fallback when Gemini AI is unavailable.
 
 /**
  * Parse prescription text with regex patterns.
@@ -49,11 +49,11 @@ export function localMatchItems(items, products) {
 }
 
 /**
- * Match Claude AI results against database inventory.
- * First tries matched_product_id from Claude, then falls back to name matching.
+ * Match AI results against database inventory.
+ * First tries matched_product_id from AI, then falls back to name matching.
  */
-export function matchClaudeResultToProducts(claudeResult, products) {
-  return claudeResult.items.map((item) => {
+export function matchAIResultToProducts(aiResult, products) {
+  return aiResult.items.map((item) => {
     const matchedProduct = item.matched_product_id
       ? products.find((p) => p.product_id === item.matched_product_id)
       : null;

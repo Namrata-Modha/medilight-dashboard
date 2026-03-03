@@ -108,7 +108,7 @@ export default function WorkflowTab({
                       <div style={{ fontSize: "11px", color: "#64748b" }}>Supports JPG, PNG, HEIC</div>
                       <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", marginTop: "14px", padding: "5px 12px", borderRadius: "20px", background: "linear-gradient(135deg, #6366f115, #8b5cf615)", border: "1px solid #6366f133" }}>
                         <span style={{ fontSize: "11px" }}>✨</span>
-                        <span style={{ fontSize: "10px", fontWeight: 600, color: "#a5b4fc" }}>Claude AI + Tesseract OCR · PHI Auto-Redacted</span>
+                        <span style={{ fontSize: "10px", fontWeight: 600, color: "#a5b4fc" }}>Gemini AI + Tesseract OCR · PHI Auto-Redacted</span>
                       </div>
                     </div>
                   ) : (

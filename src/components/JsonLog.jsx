@@ -9,7 +9,7 @@ export default function JsonLog({ jsonLog }) {
       <div
         style={{ fontSize: "11px", color: "#64748b", marginBottom: "14px" }}
       >
-        Dashboard ↔ Backend ↔ Claude AI ↔ Shelf Device. PHI redaction logged.
+        Dashboard ↔ Backend ↔ Gemini AI ↔ Shelf Device. PHI redaction logged.
       </div>
 
       {!jsonLog.length ? (
@@ -48,7 +48,7 @@ export default function JsonLog({ jsonLog }) {
                   fontSize: "11px",
                   fontWeight: 700,
                   color:
-                    e.label.includes("AI") || e.label.includes("Claude")
+                    e.label.includes("AI") || e.label.includes("Gemini")
                       ? "#a5b4fc"
                       : e.label.includes("PHI") ||
                         e.label.includes("Privacy")

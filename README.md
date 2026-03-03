@@ -4,7 +4,7 @@ Pharmacist-facing React dashboard for the MediLight Dispensing System.
 
 ## Features
 
-- **Dual AI OCR** — Claude Vision + Tesseract.js for prescription reading
+- **Dual AI OCR** — Gemini AI Vision + Tesseract.js for prescription reading
 - **PHI Protection** — Patient data extracted locally, never sent to cloud
 - **5-Step Workflow** — Upload → Review → Verify ID → Confirm → Dispense
 - **Live Inventory** — Real-time stock from PostgreSQL (Neon)
@@ -19,7 +19,7 @@ src/
 ├── MediLight.jsx             ← Main component (state + wiring)
 ├── utils/
 │   ├── api.js                ← Backend HTTP calls
-│   ├── claude.js             ← Claude AI text + vision analysis
+│   ├── ai.js                 ← Gemini AI text + vision analysis (via backend proxy)
 │   ├── constants.js          ← Config, styles, shelf layout
 │   ├── parsers.js            ← Regex OCR + inventory matching
 │   ├── privacy.js            ← PHI redaction + local extraction
@@ -48,8 +48,8 @@ Open `src/utils/api.js` and change line 3:
 const API_URL = "https://YOUR-BACKEND.onrender.com";
 ```
 
-## Deploy to Render
+## Deploy to Vercel
 
-1. Connect this GitHub repo to Render as a **Static Site**
+1. Connect this GitHub repo to Vercel
 2. Build command: `npm run build`
-3. Publish directory: `dist`
+3. Output directory: `dist`
