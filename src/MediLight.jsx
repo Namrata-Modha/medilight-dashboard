@@ -478,7 +478,18 @@ export default function MediLight() {
         )}
 
         {tab === "inventory" && !loading && (
-          <InventoryTab products={products} dbConnected={dbConnected} onFullReset={fullReset} />
+          <InventoryTab
+            products={products}
+            dbConnected={dbConnected}
+            backendOk={backendOk}
+            onFullReset={fullReset}
+            onRefreshInventory={async () => {
+              try {
+                const inv = await api("/api/inventory");
+                if (inv.products?.length) setProducts(inv.products.map((p) => ({ ...p, price: parseFloat(p.price) })));
+              } catch (err) { console.error("Refresh failed:", err); }
+            }}
+          />
         )}
 
         {tab === "orders" && !loading && (
