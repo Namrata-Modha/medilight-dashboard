@@ -20,16 +20,33 @@ export function redactPHI(text) {
 /**
  * Extract PHI locally (before redaction) so we keep it client-side only.
  * These details are displayed in the UI but never sent to any API.
+ * Handles varied formats: "Dr.", "Prescriber:", "Pt:", "Patient:", etc.
  */
 export function extractPHILocally(text) {
-  const get = (rx) => {
-    const m = text.match(rx);
-    return m ? m[1].trim() : "Unknown";
+  const get = (...rxList) => {
+    for (const rx of rxList) {
+      const m = text.match(rx);
+      if (m && m[1].trim() !== "") return m[1].trim();
+    }
+    return "Unknown";
   };
   return {
-    doctor_name: get(/Dr\.\s+([^\n,]+)/i),
-    clinic: get(/Clinic:\s*([^\n]+)/i),
-    patient_name: get(/Patient:\s*([^\n]+)/i),
-    date_issued: get(/Date:\s*([^\n]+)/i),
+    doctor_name: get(
+      /(?:Prescriber|Dr)[.:]\s*([^\n,]+?)(?:\s*[-—]\s*|$)/im,
+      /Dr\.\s+([^\n,]+)/i
+    ),
+    clinic: get(
+      /Clinic:\s*([^\n]+)/i,
+      /^([A-Z][A-Z\s&]+(?:MEDICAL|CLINIC|HEALTH|HOSPITAL|PARTNERS|ASSOCIATES|PHARMACY)[A-Z\s]*)/im
+    ),
+    patient_name: get(
+      /Patient(?:\s*Name)?:\s*([^\n]+)/i,
+      /Pt[.:]\s*([^\n]+?)(?:\s+Date|\s+DOB|\s*$)/im,
+      /Patient\s+Name:\s*([^\n]+)/i
+    ),
+    date_issued: get(
+      /Date(?:\s*(?:Prescribed|Signed|Issued))?:\s*([^\n]+)/i,
+      /(\d{1,2}\/\d{1,2}\/\d{2,4})/
+    ),
   };
 }

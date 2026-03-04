@@ -12,6 +12,7 @@ export default function WorkflowTab({
   ocrText, setOcrText,
   ocrResult, matched,
   idOk, idForm, setIdForm,
+  idErrors,
   activeLeds, blink,
   search, setSearch,
   selected, setSelected,
@@ -313,10 +314,22 @@ export default function WorkflowTab({
             </div>
             {!idOk ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <input type="text" placeholder="Patient Full Name" value={idForm.name} onChange={(e) => setIdForm((f) => ({ ...f, name: e.target.value }))} style={s.input} />
-                <input type="text" placeholder="Government ID Number" value={idForm.id} onChange={(e) => setIdForm((f) => ({ ...f, id: e.target.value }))} style={s.input} />
-                <input type="date" value={idForm.dob} onChange={(e) => setIdForm((f) => ({ ...f, dob: e.target.value }))} style={s.input} />
-                <button onClick={onVerifyId} disabled={!idForm.name || !idForm.id || busy} style={{ ...s.btn(idForm.name && idForm.id ? "#dc2626" : "#1e293b", idForm.name && idForm.id ? "#fff" : "#475569"), marginTop: "4px", cursor: idForm.name && idForm.id && !busy ? "pointer" : "default" }}>
+                <input type="text" placeholder="Patient Full Name (first and last)" value={idForm.name} onChange={(e) => setIdForm((f) => ({ ...f, name: e.target.value }))} style={s.input} />
+                <input type="text" placeholder="Government ID Number (e.g. DL-12345678)" value={idForm.id} onChange={(e) => setIdForm((f) => ({ ...f, id: e.target.value }))} style={s.input} />
+                <div>
+                  <div style={{ fontSize: "10px", color: "#f87171", marginBottom: "4px", fontWeight: 600 }}>Date of Birth (required — must be 18+)</div>
+                  <input type="date" value={idForm.dob} onChange={(e) => setIdForm((f) => ({ ...f, dob: e.target.value }))} style={s.input} />
+                </div>
+                {idErrors && idErrors.length > 0 && (
+                  <div style={{ background: "#dc262612", border: "1px solid #dc262644", borderRadius: "8px", padding: "10px 14px" }}>
+                    {idErrors.map((err, i) => (
+                      <div key={i} style={{ fontSize: "11px", color: "#fca5a5", lineHeight: "1.5" }}>
+                        ❌ {err}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <button onClick={onVerifyId} disabled={!idForm.name || !idForm.id || !idForm.dob || busy} style={{ ...s.btn(idForm.name && idForm.id && idForm.dob ? "#dc2626" : "#1e293b", idForm.name && idForm.id && idForm.dob ? "#fff" : "#475569"), marginTop: "4px", cursor: idForm.name && idForm.id && idForm.dob && !busy ? "pointer" : "default" }}>
                   {busy ? "Verifying..." : "🔐 Verify Patient Identity"}
                 </button>
               </div>

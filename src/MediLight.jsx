@@ -280,18 +280,55 @@ export default function MediLight() {
     setMatched(items); log("Manual Selection", { items }); setStep(1);
   };
 
+  const [idErrors, setIdErrors] = useState([]);
+
   const verifyId = async () => {
     if (!idForm.name || !idForm.id) return;
+    setIdErrors([]);
     setBusy(true);
     try {
       if (isConnected() && backendOk) {
-        const res = await api("/api/verify-id", { method: "POST", body: JSON.stringify({ patient_name: idForm.name, id_number: idForm.id, date_of_birth: idForm.dob }) });
-        log("ID Verification (Backend)", res);
+        const res = await fetch(`https://medilight-backend.onrender.com/api/verify-id`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ patient_name: idForm.name, id_number: idForm.id, date_of_birth: idForm.dob }),
+        });
+        const data = await res.json();
+        log("ID Verification (Backend)", data);
+
+        if (!res.ok || !data.verified) {
+          setIdErrors(data.errors || [data.error || "Verification failed"]);
+          setBusy(false);
+          return;
+        }
+        setIdOk(true);
+        setTimeout(() => setStep(3), 500);
       } else {
-        log("ID Verification (Offline)", { status: "verified_locally", patient_name: idForm.name });
+        // Offline: basic local validation
+        if (!idForm.dob) {
+          setIdErrors(["Date of birth is required for controlled substance verification"]);
+          setBusy(false);
+          return;
+        }
+        const dob = new Date(idForm.dob);
+        const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+        if (age < 18) {
+          setIdErrors([`Patient must be 18 or older (calculated age: ${age})`]);
+          setBusy(false);
+          return;
+        }
+        if (idForm.name.trim().split(/\s+/).length < 2) {
+          setIdErrors(["Please provide full name (first and last)"]);
+          setBusy(false);
+          return;
+        }
+        log("ID Verification (Offline)", { status: "verified_locally", patient_name: idForm.name, age });
+        setIdOk(true);
+        setTimeout(() => setStep(3), 500);
       }
-      setIdOk(true); setTimeout(() => setStep(3), 500);
-    } catch (e) { alert("Verification Error: " + e.message); }
+    } catch (e) {
+      setIdErrors([e.message || "Verification request failed"]);
+    }
     setBusy(false);
   };
 
@@ -330,7 +367,7 @@ export default function MediLight() {
 
   const reset = () => {
     setStep(0); setOcrText(""); setOcrResult(null); setMatched([]); setIdOk(false);
-    setIdForm({ name: "", id: "", dob: "" }); setActiveLeds([]); setBlink(true);
+    setIdForm({ name: "", id: "", dob: "" }); setIdErrors([]); setActiveLeds([]); setBlink(true);
     setSearch(""); setSelected([]); setQty({}); setLowAlerts([]); setBusy(false); setMode("ocr");
     setImageFile(null); setImagePreview(null); setOcrProgress(""); setUploadMode("scan");
     setAiNotes(""); setProcessingStage("");
@@ -414,6 +451,7 @@ export default function MediLight() {
             ocrText={ocrText} setOcrText={setOcrText}
             ocrResult={ocrResult} matched={matched}
             idOk={idOk} idForm={idForm} setIdForm={setIdForm}
+            idErrors={idErrors}
             activeLeds={activeLeds} blink={blink}
             search={search} setSearch={setSearch}
             selected={selected} setSelected={setSelected}
