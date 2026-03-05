@@ -87,6 +87,6 @@ npm run dev
 
 ## Related Repos
 
-- **Backend API** → [medilight-backend](https://github.com/YOUR_USERNAME/medilight-backend)
-- **Shelf Device** → [medilight-shelf](https://github.com/YOUR_USERNAME/medilight-shelf)
-- **Project Guide + Test Images** → [medilight-guide](https://github.com/YOUR_USERNAME/medilight-guide)
+- **Backend API** → [medilight-backend](https://github.com/Namrata-Modha/medilight-backend)
+- **Shelf Device** → [medilight-shelf](https://github.com/Namrata-Modha/medilight-shelf)
+- **Project Guide + Test Images** → [medilight-guide](https://github.com/Namrata-Modha medilight-guide)
