@@ -5,7 +5,7 @@ Pharmacist-facing React dashboard for the MediLight Dispensing System.
 ## Features
 
 - **Dual AI OCR** — Gemini AI Vision + Tesseract.js for prescription reading
-- **PHI Protection** — Patient data extracted locally, never sent to cloud
+- **PHI Protection** — Local PHI redaction before text is sent to the backend
 - **5-Step Workflow** — Upload → Review → Verify ID → Confirm → Dispense
 - **Live Inventory** — Real-time stock from PostgreSQL (Neon)
 - **LED Shelf Grid** — Visual representation of shelf LED activation
